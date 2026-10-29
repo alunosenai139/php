@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Quiz PHP</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); width: 400px; text-align: center; }
+        .btn { background-color: #007BFF; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 16px; text-decoration: none; display: inline-block; margin-top: 15px; }
+        .btn:hover { background-color: #0056b3; }
+        .opcao { display: block; text-align: left; background: #e9ecef; padding: 10px; margin: 8px 0; border-radius: 4px; cursor: pointer; }
+        .opcao input { margin-right: 10px; }
+        .opcao:hover { background: #dee2e6; }
+        input[type="text"] { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <?php if ($tela == "nome"): ?>
+        <h2>Bem-vindo ao Quiz!</h2>
+        <form method="post" action="quiz.php">
+            <p>Por favor, digite seu nome para começar:</p>
+            <input type="text" name="nome_participante" required autofocus placeholder="Seu nome aqui">
+            <button type="submit" class="btn">Iniciar Quiz</button>
+        </form>
+
+    <?php elseif ($tela == "pergunta"): ?>
+        <?php 
+        $num = $_SESSION['pergunta_atual'];
+        $p = $perguntas[$num];
+        ?>
+        <small>Participante: <strong><?= $_SESSION['nome'] ?></strong> (Pergunta <?= $num ?> de 6)</small>
+        <h3><?= $p['titulo'] ?></h3>
+        
+        <form method="post" action="quiz.php">
+            <?php foreach ($p['opcoes'] as $letra => $texto): ?>
+                <label class="opcao">
+                    <input type="radio" name="resposta" value="<?= $letra ?>" required>
+                    <strong><?= $letra ?>)</strong> <?= $texto ?>
+                </label>
+            <?php endforeach; ?>
+            <button type="submit" class="btn">Responder & Avançar</button>
+        </form>
+
+    <?php elseif ($tela == "resultado"): ?>
+        <h2>Fim do Quiz!</h2>
+        <p>Parabéns, <strong><?= $_SESSION['nome'] ?></strong>!</p>
+        <h3>Você acertou <?= $_SESSION['acertos'] ?> de 6 perguntas.</h3>
+        
+        <a href="quiz.php?reiniciar=true" class="btn">Voltar para o Início</a>
+    <?php endif; ?>
+</div>
+
+</body>
+</html>
+
+<?php
+session_start();
+
+$perguntas = [
+    1 => [
+        "titulo" => "1. Qual é a sintaxe correta para iniciar um script PHP?",
+        "opcoes" => ["A" => "<script>", "B" => "<?php", "C" => "<?", "D" => "<html php>"],
+        "correta" => "B"
+    ],
+    2 => [
+        "titulo" => "2. Como você exibe 'Olá Mundo' em PHP?",
+        "opcoes" => ["A" => "echo 'Olá Mundo';", "B" => "print_ln('Olá Mundo');", "C" => "Console.Write('Olá Mundo');", "D" => "document.write('Olá Mundo');"],
+        "correta" => "A"
+    ],
+    3 => [
+        "titulo" => "3. Todas as variáveis em PHP começam com qual símbolo?",
+        "opcoes" => ["A" => "&", "B" => "!", "C" => "$", "D" => "#"],
+        "correta" => "C"
+    ],
+    4 => [
+        "titulo" => "4. Qual função é usada para contar o número de elementos em um array?",
+        "opcoes" => ["A" => "count()", "B" => "length()", "C" => "size()", "D" => "sum()"],
+        "correta" => "A"
+    ],
+    5 => [
+        "titulo" => "5. Como se cria um comentário de uma linha em PHP?",
+        "opcoes" => ["A" => "<!-- comentário -->", "B" => "// comentário", "C" => "' comentário", "D" => "/* comentário */"],
+        "correta" => "B"
+    ],
+    6 => [
+        "titulo" => "6. Qual superglobal é utilizada para coletar dados após a submissão de um formulário HTML com method='post'?",
+        "opcoes" => ["A" => "\$_GET", "B" => "\$_SESSION", "C" => "\$_POST", "D" => "\$_REQUEST"],
+        "correta" => "C"
+    ]
+];
+
+if (isset($_GET['reiniciar'])) {
+    session_destroy();
+    header("Location: quiz.php");
+    exit;
+}
+
+$tela = "nome";
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (isset($_POST['nome_participante'])) {
+        $_SESSION['nome'] = htmlspecialchars($_POST['nome_participante']);
+        $_SESSION['pergunta_atual'] = 1;
+        $_SESSION['acertos'] = 0;
+        $tela = "pergunta";
+    }
+    elseif (isset($_POST['resposta'])) {
+        $p_atual = $_SESSION['pergunta_atual'];
+        
+        if ($_POST['resposta'] === $perguntas[$p_atual]['correta']) {
+            $_SESSION['acertos']++;
+        }
+        
+        if ($p_atual < 6) {
+            $_SESSION['pergunta_atual']++;
+            $tela = "pergunta";
+        } else {
+            $tela = "resultado";
+        }
+    }
+} elseif (isset($_SESSION['nome'])) {
+    if ($_SESSION['pergunta_atual'] <= 6) {
+        $tela = "pergunta";
+    } else {
+        $tela = "resultado";
+    }
+}
+?>
