@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>média</title>
+</head>
+<body>
+    <h1>Calcular a média de 3 valores</h1>
+    <form method="GET">
+        <label>Coloque o primeiro valor</label><br>
+        <input type="number" name="valor1" step="any" required><br><br>
+
+        <label>Coloque o segundo valor</label><br>
+        <input type="number" name="valor2" step="any" required><br><br>
+
+        <label>Coloque o terceiro valor</label><br>
+        <input type="number" name="valor3" step="any" required><br><br>
+
+        <button type="submit">Calcule</button>
+
+        <?php
+    if (isset($_GET["valor1"]) && isset($_GET["valor2"]) && isset ($GET["valor3"])) {
+        $valor1 = (float)$_GET["valor1"];
+        $valor2 = (float)$_GET["valor2"];
+        $valor3 = (float)$_GET["valor3"];
+        $media = ($valor1 + $valor2 + $valor3) / 3;
+        
+        echo "<h2>A média dos 3 números é: " $média "</h2>";
+    }
+    ?>
+    </form>
